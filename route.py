@@ -78,7 +78,14 @@ def delete_account(user:models.Account):
     is_user = connection.account.find_one({"name": user.name})
     if not is_user or not pwd.verify(user.password,is_user["password"]):
         raise HTTPException(status_code=404,detail="Incorrect Username or Password !!!")
+    connection.tasks.delete_many({"user_id":ObjectId(is_user["_id"])})
     connection.account.find_one_and_delete({"name":user.name})
+    data=read_file("time.json")
+    data.pop(user.name)
+    write_file("time.json",data)
+    data=read_file("priority.json")
+    data.pop(user.name)
+    write_file("priority.json",data)
     return f"{user.name} account deleted !!!"
 
 
