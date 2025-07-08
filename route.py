@@ -73,21 +73,52 @@ def update_account(user:models.Account):
     connection.account.find_one_and_update({"name":user.name},{"$set":{"password":password}})
     return f"{user.name} account updated successfully !!!"
 
+
 @route.delete("/delete_account")
 def delete_account(user:models.Account):
     is_user = connection.account.find_one({"name": user.name})
     if not is_user or not pwd.verify(user.password,is_user["password"]):
         raise HTTPException(status_code=404,detail="Incorrect Username or Password !!!")
+    connection.reload_account.insert_one(is_user)
+    tasks=connection.tasks.find({"user_id":ObjectId(is_user["_id"])})
+    for i in tasks:
+        connection.reload_tasks.insert_one(i)
     connection.tasks.delete_many({"user_id":ObjectId(is_user["_id"])})
     connection.account.find_one_and_delete({"name":user.name})
+    reload_data=read_file("reload_account.json")
     data=read_file("time.json")
+    reload_data[user.name]=[]
+    reload_data[user.name].append(data[user.name])
     data.pop(user.name)
     write_file("time.json",data)
     data=read_file("priority.json")
+    reload_data[user.name].append(data[user.name])
     data.pop(user.name)
     write_file("priority.json",data)
+    write_file("reload_account.json",reload_data)
     return f"{user.name} account deleted !!!"
 
+@route.post("/reload_account")
+def reload_account(user:models.Account):
+    is_user = connection.reload_account.find_one({"name": user.name})
+    if not is_user or not pwd.verify(user.password, is_user["password"]):
+        raise HTTPException(status_code=404, detail="Incorrect Username or Password !!!")
+    connection.account.insert_one(is_user)
+    connection.reload_account.find_one_and_delete({"name":user.name})
+    tasks=connection.reload_tasks.find({"user_id":ObjectId(is_user["_id"])})
+    for i in tasks:
+        connection.tasks.insert_one(i)
+    connection.reload_tasks.delete_many({"user_id":ObjectId(is_user["_id"])})
+    reload_data=read_file("reload_account.json")
+    data_1=read_file("time.json")
+    data_2=read_file("priority.json")
+    data_1[user.name]=reload_data[user.name][0]
+    data_2[user.name]=reload_data[user.name][1]
+    reload_data.pop(user.name)
+    write_file("reload_account.json",reload_data)
+    write_file("time.json",data_1)
+    write_file("priority.json",data_2)
+    return f"{user.name} account restored successfully !!!"
 
 
 @route.post("/login",tags=["ACCOUNT"])
