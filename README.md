@@ -7,6 +7,8 @@
 * User can update the password
 ### Account delete:
 * User gives username and password . If it matches , deletes the account
+### Reload account:
+* User can able to reload the deleted account
 ## Login Account:
 ### Login:
 * User provides username and password. If it matches , the user is authencated
