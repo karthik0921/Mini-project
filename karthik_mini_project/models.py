@@ -5,7 +5,7 @@ class Account(BaseModel):
     password:str
 
 class Task(BaseModel):
-    title:str="hw"
+    title:str="home work"
     priority:str="low"
 
 
