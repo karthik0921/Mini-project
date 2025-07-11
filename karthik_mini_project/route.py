@@ -235,9 +235,10 @@ def change_time_task(task_change_id:int,current_user:dict=Depends(get_current_us
                 connection.tasks.find_one_and_delete({"user_id":ObjectId(current_user["_id"]),"task_number":change_data[0][j][5]})
             data[current_user["name"]].pop(str(task_change_id))
             if i>=len(datas[current_user["name"]]):
-                datas[current_user["name"]][key].append([change_data[1][2],change_data[1][3],change_data[1][4],change_data[1][5],change_data[1][6],change_data[1][0],change_data[1][7],change_data[1][6]])
+                datas[current_user["name"]][key].append([change_data[1][2],change_data[1][3],change_data[1][4],change_data[1][5],change_data[1][6],change_data[1][0],change_data[1][7],change_data[1][8]])
             else:
-                datas[current_user["name"]][key].insert(i,[change_data[1][2],change_data[1][3],change_data[1][4],change_data[1][5],change_data[1][6],change_data[1][0],change_data[1][7],change_data[1][6]])
+                datas[current_user["name"]][key].insert(i,[change_data[1][2],change_data[1][3],change_data[1][4],change_data[1][5],change_data[1][6],change_data[1][0],change_data[1][7],change_data[1][8]])
+            datas[current_user["name"]][key].sort(key=lambda x: (x[0], x[1]))
             now = date.today()
             start_time = datetime(now.year, now.month, now.day, change_data[1][2], change_data[1][3])
             end_time = datetime(now.year, now.month, now.day, change_data[1][4], change_data[1][5])
