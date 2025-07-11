@@ -260,11 +260,6 @@ def change_time_task(task_change_id:int,current_user:dict=Depends(get_current_us
     return "Tasks replaced successfully !!!"
 
 
-@route.get("/get_all_task",tags=["Task"])
-def get_all_task(dates:int,month:int,current_user:dict=Depends(get_current_user)):
-    tasks=connection.tasks.find({"user_id":ObjectId(current_user["_id"]),"month":month,"date":dates})
-    return schemas.get_many(tasks)
-
 
 def get_percentage_task(task,current_user_id,task_number):
     if task["status"]!=True :
@@ -282,6 +277,15 @@ def get_percentage_task(task,current_user_id,task_number):
             connection.tasks.find_one_and_update({"user_id": ObjectId(current_user_id), "task_number": task_number},{"$set": {"percentage":percent}})
             return percent
     return True
+
+@route.get("/get_all_task",tags=["Task"])
+def get_all_task(dates:int,month:int,current_user:dict=Depends(get_current_user)):
+    tasks=connection.tasks.find({"user_id":ObjectId(current_user["_id"]),"month":month,"date":dates})
+    for i in tasks:
+        get_percentage_task(i,current_user["_id"],i["task_number"])
+    tasks=connection.tasks.find({"user_id":ObjectId(current_user["_id"]),"month":month,"date":dates})
+    return schemas.get_many(tasks)
+
 
 @route.get("/get_percentage",tags=["Task"])
 def get_percentage(*,dates:str="today",month:str="present_month",task_id:int,current_user:dict=Depends(get_current_user)):
